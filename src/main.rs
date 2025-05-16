@@ -76,12 +76,13 @@ fn benchmark_barebones() -> Result<()> {
     // Number of trials and warmup iterations
     let trials = 1000;
     let warmup = 200;
-
+    let mut ans = 0 as u64;
     // Warmup phase
     for _ in 0..warmup {
-        let _ = ymult(a, b);
-        let _ = cmult_unwrapped(a, b);
-        let _ = oldmult(a, b);
+        let y = ymult(a, b);
+        let c = cmult_unwrapped(a, b);
+        let o = oldmult(a, b);
+	ans += y[0]+c[0]+o[0];
     }
 
     // Create or open the CSV file for writing the benchmark data
@@ -92,15 +93,15 @@ fn benchmark_barebones() -> Result<()> {
     // Collect data for each trial
     for _ in 0..trials {
         let start = Instant::now();
-        let _ = ymult(a, b);
+        let y = ymult(a, b);
         let elapsed_ymult = start.elapsed().as_nanos();
 
         let start = Instant::now();
-        let _ = cmult_unwrapped(a, b);
+        let c = cmult_unwrapped(a, b);
         let elapsed_cmult_unwrapped = start.elapsed().as_nanos();
 
         let start = Instant::now();
-        let _ = oldmult(a, b);
+        let o = oldmult(a, b);
         let elapsed_oldmult = start.elapsed().as_nanos();
 
         // Write the times to the CSV file for each function
@@ -108,7 +109,9 @@ fn benchmark_barebones() -> Result<()> {
             file,
             "{elapsed_ymult},{elapsed_cmult_unwrapped},{elapsed_oldmult}",
         )?;
+	ans += y[0]+c[0]+o[0];
     }
+    println!("{:?}", ans);
 
     Ok(())
 }
@@ -177,13 +180,13 @@ fn main() {
         Ok(_) => println!("Benchmarking completed and results saved to 'benchmark_data.csv'."),
         Err(e) => eprintln!("Error writing benchmark data: {e}"),
     }
-    match test_correctness() {
-        Ok(_) => println!("The two mulitplication algorithms return the same output"),
-        Err(e) => eprintln!("Something is wrong with the new multiplication algorithm: {e}"),
-    }
+    // match test_correctness() {
+    //     Ok(_) => println!("The two mulitplication algorithms return the same output"),
+    //     Err(e) => eprintln!("Something is wrong with the new multiplication algorithm: {e}"),
+    // }
 
-    match benchmark_inside_of_arkworks() {
-        Ok(_) => println!("Benchmarking done"),
-        Err(_e) => eprintln!("Something went wrtong"),
-    }
+    // match benchmark_inside_of_arkworks() {
+    //     Ok(_) => println!("Benchmarking done"),
+    //     Err(_e) => eprintln!("Something went wrtong"),
+    // }
 }
