@@ -60,6 +60,8 @@ fn benchmark_chained_mul_instance() -> (f64, f64) {
 // Strip away all the arkorks formatting and just compare
 // integer multiplication when the input is in its simplest form.
 fn benchmark_barebones() -> Result<()> {
+    // You can pick any a and b it doesn't matter
+    // Random ones don't change the outcome.
     let a = [
         4412042023574846361,
         16957435782954092809,
@@ -82,7 +84,9 @@ fn benchmark_barebones() -> Result<()> {
         let y = ymult(a, b);
         let c = cmult_unwrapped(a, b);
         let o = oldmult(a, b);
-	ans += y[0]+c[0]+o[0];
+        // This is done so that RUST doesn't optimise
+        // the mults out of the codepath in release
+        ans += y[0] + c[0] + o[0];
     }
 
     // Create or open the CSV file for writing the benchmark data
@@ -109,8 +113,11 @@ fn benchmark_barebones() -> Result<()> {
             file,
             "{elapsed_ymult},{elapsed_cmult_unwrapped},{elapsed_oldmult}",
         )?;
-	ans += y[0]+c[0]+o[0];
+        ans += y[0] + c[0] + o[0];
     }
+    // This is just for getting the numbers out
+    // We could have used bench, but for such a simple
+    // test it seemed like a faff!
     println!("{:?}", ans);
 
     Ok(())
@@ -122,6 +129,9 @@ fn random_fp<F: UniformRand>() -> F {
 }
 
 fn test_correctness() -> std::result::Result<(), String> {
+    // This tests if the code implemented inside of arkworks
+    // gives the same outout as the old CIOS algorithm
+    // NOTE: This is strictly for Bn254 scalar field modulus.
     for i in 0..1000 {
         // With this we run the old multiplication algorithm
         let a_old = random_fp::<Fq>();
@@ -180,6 +190,7 @@ fn main() {
         Ok(_) => println!("Benchmarking completed and results saved to 'benchmark_data.csv'."),
         Err(e) => eprintln!("Error writing benchmark data: {e}"),
     }
+
     // match test_correctness() {
     //     Ok(_) => println!("The two mulitplication algorithms return the same output"),
     //     Err(e) => eprintln!("Something is wrong with the new multiplication algorithm: {e}"),
