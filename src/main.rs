@@ -2,7 +2,9 @@ mod constants;
 mod optimised_cios;
 mod vanilla_cios;
 mod yuval_mult;
+use std::fmt::format;
 use std::time::Instant;
+use std::u128;
 
 use optimised_cios::scalar_mul_unwrapped as cmult_unwrapped;
 use std::fs::File;
@@ -29,49 +31,11 @@ pub type Fq = Fp256<MontBackend<FqConfig, 4>>;
 pub struct FFqConfig;
 pub type FFq = Fp256<MontBackend<FFqConfig, 4>>;
 
-fn bench_chain_mul<F: UniformRand + std::ops::Mul<Output = F> + Copy>(m: usize, mut acc: F) -> F {
-    for _ in 1..m {
-        //acc = acc * F::rand(&mut rng);
-        acc = acc * acc;
-    }
-    acc
-}
-
-/// Create a random big integer and chain multiply it M times
-fn benchmark_chained_mul_instance() -> (f64, f64) {
-    const M: usize = 10000;
-
-    let f = random_fp::<Fq>();
-    let now = Instant::now();
-    let _result_old = bench_chain_mul::<Fq>(M, f);
-    let duration_old = now.elapsed();
-
-    let f = random_fp::<FFq>();
-    let now = Instant::now();
-    let _result_new = bench_chain_mul::<FFq>(M, f);
-    let duration_new = now.elapsed();
-
-    // Calculate percentage improvement
-    let time_new = duration_new.as_secs_f64();
-    let time_old = duration_old.as_secs_f64();
-
-    (time_old, time_new)
-}
 // Strip away all the arkorks formatting and just compare
 // integer multiplication when the input is in its simplest form.
 fn benchmark_barebones() -> Result<()> {
-    let a = [
-        4412042023574846361,
-        16957435782954092809,
-        5236635384556860354,
-        4927983752379797604,
-    ];
-    let b = [
-        4412042023574846361,
-        16957435782954092809,
-        5236635384556860354,
-        4927983752379797604,
-    ];
+    let a = random_fp::<FFq>().into_bigint().0;
+    let b = random_fp::<FFq>().into_bigint().0;
 
     // Number of trials and warmup iterations
     let trials = 1000;
@@ -91,6 +55,9 @@ fn benchmark_barebones() -> Result<()> {
 
     // Collect data for each trial
     for _ in 0..trials {
+        let a = random_fp::<FFq>().into_bigint().0;
+        let b = random_fp::<FFq>().into_bigint().0;
+
         let start = Instant::now();
         let _ = ymult(a, b);
         let elapsed_ymult = start.elapsed().as_nanos();
@@ -144,29 +111,65 @@ fn test_correctness() -> std::result::Result<(), String> {
     Ok(())
 }
 
+fn bench_chain_mul<F: UniformRand + std::ops::Mul<Output = F> + Copy>(m: usize, mut acc: F) -> F {
+    for _ in 1..m {
+        //acc = acc * F::rand(&mut rng);
+        acc = acc * acc;
+    }
+    acc
+}
+
+/// Create a random big integer and chain multiply it M times
+fn benchmark_chained_mul_instance() -> (
+    u128,
+    u128,
+    Fp256<MontBackend<FqConfig, 4>>,
+    Fp256<MontBackend<FFqConfig, 4>>,
+) {
+    const M: usize = 100000;
+
+    let f = random_fp::<Fq>();
+    let now = Instant::now();
+    let result_old = bench_chain_mul::<Fq>(M, f);
+    let duration_old = now.elapsed();
+
+    let f = random_fp::<FFq>();
+    let now = Instant::now();
+    let result_new = bench_chain_mul::<FFq>(M, f);
+    let duration_new = now.elapsed();
+
+    // Calculate percentage improvement
+    let time_new = duration_new.as_nanos();
+    let time_old = duration_old.as_nanos();
+
+    (time_old, time_new, result_old, result_new)
+}
+
 fn benchmark_inside_of_arkworks() -> Result<()> {
     // Create or open the CSV file for writing the benchmark data
-    let mut file = File::create("arkworks_benchmark_data.csv")?;
+    let mut file = File::create("benchmark_data.csv")?;
     // Write CSV header
     writeln!(file, "G-mult,Y-mult")?;
 
-    let mut total_old: f64 = 0.0;
-    let mut total_yuval = 0.0;
+    let mut total_old: u128 = 0;
+    let mut total_yuval: u128 = 0;
     let num_trials = 1000;
     let pb = ProgressBar::new(num_trials);
+
     for _ in 0..num_trials {
-        let (tmp1, tmp2) = benchmark_chained_mul_instance();
+        let (tmp1, tmp2, r1, r2) = benchmark_chained_mul_instance();
         pb.inc(1);
         total_old += tmp1;
         total_yuval += tmp2;
 
+        println!("{total_old}, {total_yuval}");
         // Write the times to the CSV file for each function
-        writeln!(file, "{tmp1},{tmp2}",)?;
+        writeln!(file, "{tmp1}, {tmp2}, {r1}, {r2}")?;
     }
     pb.finish_with_message("Done!");
 
-    let average_old = total_old / (num_trials as f64);
-    let average_new = total_yuval / (num_trials as f64);
+    let average_old = (total_old as f64) / (num_trials as f64);
+    let average_new = (total_yuval as f64) / (num_trials as f64);
     println!("Average improvement: {:.9}\n\n", average_old / average_new);
 
     Ok(())

@@ -67,7 +67,7 @@ pub fn reduce_ct(a: [u64; 4], u64_2p: [u64; 4]) -> [u64; 4] {
     let msb = (a[3] >> 63) & 1;
     sub(a, b[msb as usize])
 }
-
+// I could unroll this as well.
 #[inline(always)]
 pub fn sub<const N: usize>(a: [u64; N], b: [u64; N]) -> [u64; N] {
     let mut borrow: i128 = 0;
