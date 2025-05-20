@@ -97,17 +97,24 @@ fn benchmark_barebones() -> Result<()> {
     // Collect data for each trial
     for _ in 0..trials {
         let start = Instant::now();
-        let y = ymult(a, b);
+        let mut y = ymult(a, b);
+        for _ in 0..100 {
+            y = ymult(y, b);
+        }
         let elapsed_ymult = start.elapsed().as_nanos();
 
         let start = Instant::now();
-        let c = cmult_unwrapped(a, b);
+        let mut c = cmult_unwrapped(a, b);
+        for _ in 0..100 {
+            c = cmult_unwrapped(c, b);
+        }
         let elapsed_cmult_unwrapped = start.elapsed().as_nanos();
-
         let start = Instant::now();
-        let o = oldmult(a, b);
+        let mut o = oldmult(a, b);
+        for _ in 0..100 {
+            o = oldmult(o, b);
+        }
         let elapsed_oldmult = start.elapsed().as_nanos();
-
         // Write the times to the CSV file for each function
         writeln!(
             file,
