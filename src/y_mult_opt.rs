@@ -1,7 +1,6 @@
 // unrolled logjumps using i1/i2 with daisy-chained carries and 128b additions
 // note: this version is limited to inputs < p
 use crate::constants::*;
-use crate::yuval_mult::reduce_ct;
 #[inline]
 pub fn mul_logjumps_unr_2(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     let (c00hi, c00lo) = mult(a[0], b[0]);

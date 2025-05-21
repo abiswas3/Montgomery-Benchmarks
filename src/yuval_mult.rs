@@ -1,4 +1,4 @@
-use super::constants::{U64_2P, U64_I1, U64_I2, U64_I3, U64_MU0, U64_P};
+use super::constants::{U64_I1, U64_I2, U64_I3, U64_MU0, U64_P};
 
 #[macro_export]
 macro_rules! subarray {

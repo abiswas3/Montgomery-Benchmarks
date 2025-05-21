@@ -1,6 +1,6 @@
 use ark_ff::fields::{Fp256, MontBackend, MontConfig};
+use ark_ff::Field;
 use ark_ff::UniformRand;
-use ark_ff::{Field, PrimeField};
 use ark_std::rand::{rngs::StdRng, SeedableRng};
 
 #[derive(MontConfig)]

@@ -1,5 +1,4 @@
 use ark_ff::fields::{Fp256, MontBackend, MontConfig};
-use ark_ff::PrimeField;
 use ark_ff::UniformRand;
 use ark_std::rand::{rngs::StdRng, SeedableRng};
 use std::fs::File;
