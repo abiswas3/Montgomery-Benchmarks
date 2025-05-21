@@ -20,7 +20,7 @@ pub type Fq = Fp256<MontBackend<FqConfig, 4>>;
 pub struct FFqConfig;
 pub type FFq = Fp256<MontBackend<FFqConfig, 4>>;
 
-fn random_fp<F: UniformRand>() -> F {
+fn random_fp<F: UniformRand>(seed: u64) -> F {
     let mut rng = StdRng::seed_from_u64(42);
     F::rand(&mut rng)
 }
@@ -28,8 +28,8 @@ fn random_fp<F: UniformRand>() -> F {
 fn benchmark_chained_mul_instance() -> (u128, u128) {
     const M: usize = 10000;
 
-    let mut acc_old = random_fp::<Fq>();
-    let b = random_fp::<Fq>();
+    let mut acc_old = random_fp::<Fq>(12);
+    let b = random_fp::<Fq>(13);
     let now = Instant::now();
     for _ in 0..M {
         acc_old = black_box(acc_old) * black_box(b);
@@ -37,8 +37,8 @@ fn benchmark_chained_mul_instance() -> (u128, u128) {
     black_box(acc_old);
     let duration_old = now.elapsed().as_nanos();
 
-    let mut acc_new = random_fp::<FFq>();
-    let b = random_fp::<FFq>();
+    let mut acc_new = random_fp::<FFq>(12);
+    let b = random_fp::<FFq>(13);
     let now = Instant::now();
     for _ in 0..M {
         acc_new = black_box(acc_new) * black_box(b);
