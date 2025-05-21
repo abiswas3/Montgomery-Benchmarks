@@ -87,7 +87,7 @@ pub fn carrying_mul_add(a: u64, b: u64, add: u64, carry: u64) -> (u64, u64) {
 }
 
 //#[inline]
-pub extern "C" fn scalar_mul(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
+pub fn scalar_mul(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     let mut t = [0_u64; 8];
     let mut carry = 0;
     (t[0], carry) = carrying_mul_add(a[0], b[0], t[0], carry);
@@ -140,6 +140,6 @@ pub extern "C" fn scalar_mul(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     (mp[1], mp[2]) = carrying_mul_add(m, U64_P[1], mp[1], 0);
     (mp[2], mp[3]) = carrying_mul_add(m, U64_P[2], mp[2], 0);
     (mp[3], mp[4]) = carrying_mul_add(m, U64_P[3], mp[3], 0);
-
-    reduce_ct(subarray!(addv(s, mp), 1, 4), U64_2P)
+    //reduce_ct(subarray!(addv(s, mp), 1, 4), U64_2P)
+    subarray!(addv(s, mp), 1, 4)
 }
