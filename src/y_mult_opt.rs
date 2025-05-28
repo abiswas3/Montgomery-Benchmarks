@@ -1,6 +1,10 @@
 // unrolled logjumps using i1/i2 with daisy-chained carries and 128b additions
 // note: this version is limited to inputs < p
-use crate::constants::*;
+
+use crate::subtract_modulus;
+
+use super::constants::{U64_2P, U64_I1, U64_I2, U64_I3, U64_MU0, U64_P};
+
 #[inline]
 pub fn mul_logjumps_unr_2(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     let (c00hi, c00lo) = mult(a[0], b[0]);
@@ -39,10 +43,10 @@ pub fn mul_logjumps_unr_2(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     (r2, _) = wadd(0u64, c21hi, r2, c);
 
     (r1, c) = wadd(c02hi, c02lo, r1, false);
-    (r2, _) = wadd(c13hi, c13lo, r2, c); // ignore c - limited to input < p
+    (r2, c) = wadd(c13hi, c13lo, r2, c); // ignore c - limited to input < p
 
     (r1, c) = wadd(c20hi, c20lo, r1, false);
-    (r2, _) = wadd(c31hi, c31lo, r2, c); // ignore c - limited to input < p
+    (r2, c) = wadd(c31hi, c31lo, r2, c); // ignore c - limited to input < p
 
     (r1, c) = wadd(c03lo, 0u64, r1, false);
     (r2, c) = wadd(c23lo, c03hi, r2, c);
@@ -107,7 +111,12 @@ pub fn mul_logjumps_unr_2(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     (r3, _) = wadd(0u64, 0u64, r3, c);
 
     // return
-    [r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64]
+    let mut r = [r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64];
+
+    // Two seems to be working but it should not
+    subtract_modulus(&mut r);
+    subtract_modulus(&mut r);
+    r
 }
 
 #[inline]

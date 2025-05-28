@@ -10,13 +10,17 @@ use std::hint::black_box;
 
 #[derive(MontConfig)]
 #[modulus = "21888242871839275222246405745257275088548364400416034343698204186575808495617"]
-#[generator = "3"]
+#[generator = "5"]
+#[small_subgroup_base = "3"]
+#[small_subgroup_power = "2"]
 pub struct FqConfig;
 pub type Fq = Fp256<MontBackend<FqConfig, 4>>;
 
 #[derive(MontConfig)]
 #[modulus = "21888242871839275222246405745257275088548364400416034343698204186575808495617"]
-#[generator = "3"]
+#[generator = "5"]
+#[small_subgroup_base = "3"]
+#[small_subgroup_power = "2"]
 #[yd_opt = "true"]
 pub struct FFqConfig;
 pub type FFq = Fp256<MontBackend<FFqConfig, 4>>;

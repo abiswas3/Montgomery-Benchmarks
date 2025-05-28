@@ -1,3 +1,4 @@
+#![feature(bigint_helper_methods)]
 use ark_ff::fields::{Fp256, MontBackend, MontConfig};
 use ark_ff::UniformRand;
 use ark_std::rand::{rngs::StdRng, SeedableRng};
@@ -20,7 +21,7 @@ pub struct FFqConfig;
 pub type FFq = Fp256<MontBackend<FFqConfig, 4>>;
 
 fn random_fp<F: UniformRand>(seed: u64) -> F {
-    let mut rng = StdRng::seed_from_u64(42);
+    let mut rng = StdRng::seed_from_u64(seed);
     F::rand(&mut rng)
 }
 
