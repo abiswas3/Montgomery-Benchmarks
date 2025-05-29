@@ -26,7 +26,7 @@ fn random_fp<F: UniformRand>(seed: u64) -> F {
 }
 
 fn benchmark_chained_mul_instance() -> (u128, u128) {
-    const M: usize = 10000;
+    const M: usize = 1000;
 
     let mut acc_old = random_fp::<Fq>(12);
     let b = random_fp::<Fq>(13);
@@ -54,13 +54,13 @@ fn benchmark_inside_of_arkworks() -> Result<()> {
     let mut file = File::create("arkworks_multiplication.csv")?;
     // Write CSV header
     writeln!(file, "G-mult,Y-mult")?;
-
-    let num_trials = 1000;
+    let num_trials = 10000;
     for _ in 0..num_trials {
         let (old_time, new_time) = benchmark_chained_mul_instance();
         // Write the times to the CSV file for each function
         writeln!(file, "{old_time},{new_time}",)?;
     }
+    println!("{num_trials} Trials of 1000 chained multiplications");
     Ok(())
 }
 

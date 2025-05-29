@@ -1,6 +1,5 @@
+use super::constants::{U64_2P, U64_3P, U64_4P, U64_I1, U64_I2, U64_I3, U64_MU0, U64_P};
 use crate::subtract_modulus;
-
-use super::constants::{U64_2P, U64_I1, U64_I2, U64_I3, U64_MU0, U64_P};
 
 #[macro_export]
 macro_rules! subarray {
@@ -95,9 +94,12 @@ pub fn greater_than(a: &[u64; 4], b: &[u64; 4]) -> bool {
 
 #[inline(always)]
 pub fn reduce_ct(a: [u64; 4]) -> [u64; 4] {
-    let b = [[0_u64; 4], U64_P, U64_2P];
-    //let msb = (a[3] >> 63) & 1;
-    let msb = (greater_than(&a, &U64_P) as u8) + (greater_than(&a, &U64_2P) as u8);
+    let b = [[0_u64; 4], U64_P, U64_2P, U64_3P, U64_4P];
+    let msb = (a[3] >> 63) & 1;
+    //let msb = (greater_than(&a, &U64_P) as u8)
+    //    + (greater_than(&a, &U64_2P) as u8)
+    //+ (greater_than(&a, &U64_3P) as u8)
+    //+ (greater_than(&a, &U64_4P) as u8);
     sub(a, b[msb as usize])
 }
 

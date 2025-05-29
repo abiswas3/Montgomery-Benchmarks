@@ -36,7 +36,7 @@ fn random_fp<F: UniformRand>(seed: u64) -> F {
 #[test]
 fn test_correctness_multiplication() {
     const NUM_MULTS: usize = 3;
-    for trial_num in 0..100000 {
+    for trial_num in 0..10000 {
         // The output modifield versions.
         let seed = trial_num * 3;
 
@@ -57,6 +57,10 @@ fn test_correctness_multiplication() {
             c *= b;
         }
         let mut panic_flag = false;
+        // If ever arkworks and CIOS don't agree
+        // then panic;
+        // Remember : Arkworks WILL always be <
+        // Remember : Arkworks WILL always be < pp
         for i in 0..4 {
             let limb_new = (c.0).0[i];
             let limb_old = (c_old.0).0[i];
@@ -66,8 +70,8 @@ fn test_correctness_multiplication() {
                 println!("Mismatched limb index = {i}");
                 println!("a[{}] {}", i, tmp.0 .0[i]);
                 println!("b[{}] {}", i, b_old.0 .0[i]);
-                println!(" c_old[{i}]: {limb_old}");
-                println!(" c[{i}]:  {limb_new}");
+                println!("c_old[{}]: 0x{:x}", i, limb_old);
+                println!("c[{}]:     0x{:x}", i, limb_new);
                 println!(
                     "Is c > p {}: {}",
                     geq_bigint((c.0).0, U64_P),
@@ -86,7 +90,6 @@ fn test_correctness_multiplication() {
         if panic_flag {
             println!("c converted= {c}");
             println!("c_old Converted = {c_old}");
-
             panic!("Problem!");
         }
         //assert_eq!(

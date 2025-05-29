@@ -13,7 +13,24 @@ pub const U64_2P: [u64; 4] = [
     0x70a08b6d0302b0ba,
     0x60c89ce5c2634053,
 ];
-
+pub const U64_3P: [u64; 4] = [
+    0xcba5e0bbd0000003,
+    0x789bb8d96d2c51b3,
+    0x28f0d12384840917,
+    0x912ceb58a394e07d,
+];
+pub const U64_4P: [u64; 4] = [
+    0x0f87d64fc0000004,
+    0xa0cfa121e6e5c245,
+    0xe14116da06056174,
+    0xc19139cb84c680a6,
+];
+pub const U64_5P: [u64; 4] = [
+    0x5369cbe3b0000005,
+    0xc903896a609f32d6,
+    0x99915c908786b9d1,
+    0xf1f5883e65f820d0,
+];
 pub const U64_I1: [u64; 4] = [
     0x2d3e8053e396ee4d,
     0xca478dbeab3c92cd,

@@ -20,15 +20,15 @@ pub fn mul_cios_opt_unr_3(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     let (c32hi, c32lo) = mult(a[3], b[2]);
     let (c33hi, c33lo) = mult(a[3], b[3]);
 
-    let mut c: bool;
-    let mut r00 = c00lo;
-    let mut r01 = 0u64;
-    let mut r10 = 0u64;
-    let mut r11 = 0u64;
-    let mut r20 = 0u64;
-    let mut r21 = 0u64;
-    let mut r30 = 0u64;
-    let mut r31 = 0u64;
+    //let c: bool;
+    let r00 = c00lo;
+    let r01 = 0u64;
+    let r10 = 0u64;
+    let r11 = 0u64;
+    let r20 = 0u64;
+    let r21 = 0u64;
+    let r30 = 0u64;
+    let r31 = 0u64;
 
     let m = U64_MU0.wrapping_mul(r00);
     let (m00hi, m00lo) = mult(m, U64_P[0]);
@@ -136,16 +136,13 @@ pub fn mul_cios_opt_unr_3(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     let (r20, c) = r20.carrying_add(m30hi, c);
     let (r21, c) = r21.carrying_add(m32lo, c);
     let (r30, c) = r30.carrying_add(m32hi, c);
-    let (r31, c) = r31.carrying_add(m33hi, c);
+    let (r31, _) = r31.carrying_add(m33hi, c);
     let (r20, c) = r20.carrying_add(m31lo, false);
     let (r21, c) = r21.carrying_add(m31hi, c);
     let (r30, c) = r30.carrying_add(m33lo, c);
     let (r31, _) = r31.carrying_add(0u64, c);
     // return
     let mut r = [r20, r21, r30, r31];
-
-    // I stuck this in --> and this should be sufficient
-    // for what CIOS.
     subtract_modulus(&mut r);
     r
 }

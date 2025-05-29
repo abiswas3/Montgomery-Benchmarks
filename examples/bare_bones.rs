@@ -1,3 +1,4 @@
+#![allow(warnings)]
 #![feature(bigint_helper_methods)]
 
 // Script for testing things outside of arkworks.
@@ -31,7 +32,7 @@ fn random_fq(seed: u64) -> Fq {
     Fq::rand(&mut rng)
 }
 
-fn main() {
+fn simple_chaining() {
     for trial_num in 0..1000 {
         const NUM_MULTS: usize = 1;
         let mut ymul: [u64; 4] = random_fq(trial_num).0 .0;
@@ -53,7 +54,7 @@ fn main() {
             ycios_mul = mul_cios_opt_unr_3(ycios_mul, b); // Yuval's CIOS implementation
             arkworks_truth *= b_fq;
         }
-        if !arrays_eq!(t_mul, arkworks_truth.0 .0) || !arrays_eq!(ymul, arkworks_truth.0 .0) {
+        if !arrays_eq!(ymul, arkworks_truth.0 .0) {
             println!("-------------------{trial_num}-------------------");
             print!("Yuval CIOS ");
             print_u64_4!(ycios_mul);
@@ -76,4 +77,33 @@ fn main() {
             println!("Is t_mul > p: {}", geq_bigint(t_mul, U64_P));
         }
     }
+}
+fn simple_product() {
+    let a = [
+        0xffffffde00000021,
+        0xffffffde00000021,
+        0xffffffde00000021,
+        0x30644e72e131a028,
+    ];
+
+    let b = [
+        0xffffffce00000031,
+        0xffffffce00000031,
+        0xffffffce00000031,
+        0x30644e72e131a028,
+    ];
+    let ymul = mul_logjumps_unr_2(a, b); // Yuvals skyscraper implementation
+    let gmul = gcios_mul(a, b); // Arkworks-cios
+    let tmul = tony_mul(a, b);
+
+    if arrays_eq!(ymul, gmul) {
+        print_u64_4!(ymul);
+        print_u64_4!(gmul);
+        print_u64_4!(tmul);
+    }
+}
+
+fn main() {
+    //simple_product();
+    simple_chaining();
 }

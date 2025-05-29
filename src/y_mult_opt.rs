@@ -112,8 +112,6 @@ pub fn mul_logjumps_unr_2(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
 
     // return
     let mut r = [r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64];
-
-    // Two seems to be working but it should not
     subtract_modulus(&mut r);
     subtract_modulus(&mut r);
     r

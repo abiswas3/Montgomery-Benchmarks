@@ -137,7 +137,6 @@ pub fn scalar_mul_unwrapped(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
 
         r[3] = carry1 + carry2;
     }
-
     subtract_modulus(&mut r);
     r
 }

@@ -21,7 +21,10 @@ pub fn geq_bigint(x: [u64; 4], p: [u64; 4]) -> bool {
 #[macro_export]
 macro_rules! print_u64_4 {
     ($arr:expr) => {
-        println!("[{}, {}, {}, {}]", $arr[0], $arr[1], $arr[2], $arr[3]);
+        println!(
+            "[{:x}, {:x}, {:x}, {:x}]",
+            $arr[0], $arr[1], $arr[2], $arr[3]
+        );
     };
 }
 
@@ -33,7 +36,7 @@ macro_rules! arrays_eq {
 }
 
 #[inline(always)]
-pub fn sub_with_borrow(a: &mut [u64; 4], b: &[u64; 4]) -> bool {
+pub fn __sub_with_borrow(a: &mut [u64; 4], b: &[u64; 4]) -> bool {
     use ark_ff::biginteger::arithmetic::sbb_for_sub_with_borrow as sbb;
     let mut borrow = 0;
     borrow = sbb(&mut a[0usize], b[0usize], borrow);
@@ -46,6 +49,6 @@ pub fn sub_with_borrow(a: &mut [u64; 4], b: &[u64; 4]) -> bool {
 #[inline(always)]
 pub fn subtract_modulus(a: &mut [u64; 4]) {
     if geq_bigint(*a, constants::U64_P) {
-        sub_with_borrow(a, &constants::U64_P);
+        __sub_with_borrow(a, &constants::U64_P);
     }
 }
