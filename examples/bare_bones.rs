@@ -33,8 +33,8 @@ fn random_fq(seed: u64) -> Fq {
 }
 
 fn simple_chaining() {
-    for trial_num in 0..1000 {
-        const NUM_MULTS: usize = 1;
+    for trial_num in 0..1000000 {
+        const NUM_MULTS: usize = 4;
         let mut ymul: [u64; 4] = random_fq(trial_num).0 .0;
         let mut gmul: [u64; 4] = random_fq(trial_num).0 .0;
         let mut ycios_mul: [u64; 4] = random_fq(trial_num).0 .0;
@@ -54,7 +54,15 @@ fn simple_chaining() {
             ycios_mul = mul_cios_opt_unr_3(ycios_mul, b); // Yuval's CIOS implementation
             arkworks_truth *= b_fq;
         }
-        if !arrays_eq!(ymul, arkworks_truth.0 .0) {
+        if !arrays_eq!(t_mul, arkworks_truth.0 .0) {
+            let mut count = 0;
+            while geq_bigint(t_mul, U64_P) {
+                count += 1;
+                subtract_modulus(&mut t_mul);
+            }
+            if count <= 3 {
+                continue;
+            }
             println!("-------------------{trial_num}-------------------");
             print!("Yuval CIOS ");
             print_u64_4!(ycios_mul);
@@ -64,17 +72,10 @@ fn simple_chaining() {
             print_u64_4!(ymul);
             print!("TONY OPT ");
             print_u64_4!(t_mul);
-            let mut count = 0;
-            while arkworks_truth.is_geq_modulus() {
-                count += 1;
-                let mut r = arkworks_truth.0 .0;
-                subtract_modulus(&mut r);
-                arkworks_truth.0 .0 = r;
-            }
             print!("Library code ");
-            print_u64_4!(arkworks_truth.0 .0);
+            print_u64_4!(t_mul);
             println!("Took {} subtractions", count);
-            println!("Is t_mul > p: {}", geq_bigint(t_mul, U64_P));
+            print_u64_4!(t_mul);
         }
     }
 }
@@ -94,12 +95,25 @@ fn simple_product() {
     ];
     let ymul = mul_logjumps_unr_2(a, b); // Yuvals skyscraper implementation
     let gmul = gcios_mul(a, b); // Arkworks-cios
-    let tmul = tony_mul(a, b);
+    let mut t_mul = tony_mul(a, b);
 
-    if arrays_eq!(ymul, gmul) {
+    if !arrays_eq!(t_mul, gmul) {
         print_u64_4!(ymul);
         print_u64_4!(gmul);
-        print_u64_4!(tmul);
+        print_u64_4!(t_mul);
+        let mut count = 0;
+        while geq_bigint(t_mul, U64_P) {
+            count += 1;
+            subtract_modulus(&mut t_mul);
+        }
+        print!("ARKWORKS CIOS ");
+        print_u64_4!(gmul);
+        print!("Yuval OPT ");
+        print_u64_4!(ymul);
+        print!("TONY OPT ");
+        print_u64_4!(t_mul);
+        println!("Took {} subtractions", count);
+        print_u64_4!(t_mul);
     }
 }
 

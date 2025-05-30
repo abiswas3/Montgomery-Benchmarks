@@ -92,14 +92,15 @@ pub fn greater_than(a: &[u64; 4], b: &[u64; 4]) -> bool {
     false // all limbs equal
 }
 
+// You don't really need 4p for bn-254
 #[inline(always)]
 pub fn reduce_ct(a: [u64; 4]) -> [u64; 4] {
     let b = [[0_u64; 4], U64_P, U64_2P, U64_3P, U64_4P];
-    let msb = (a[3] >> 63) & 1;
-    //let msb = (greater_than(&a, &U64_P) as u8)
-    //    + (greater_than(&a, &U64_2P) as u8)
-    //+ (greater_than(&a, &U64_3P) as u8)
-    //+ (greater_than(&a, &U64_4P) as u8);
+    //let msb = (a[3] >> 63) & 1;
+    let msb = (greater_than(&a, &U64_P) as u8)
+        + (greater_than(&a, &U64_2P) as u8)
+        + (greater_than(&a, &U64_3P) as u8)
+        + (greater_than(&a, &U64_4P) as u8);
     sub(a, b[msb as usize])
 }
 
