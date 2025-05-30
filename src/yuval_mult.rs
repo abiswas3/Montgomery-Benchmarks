@@ -1,4 +1,5 @@
-use super::constants::{U64_2P, U64_I1, U64_I2, U64_I3, U64_MU0, U64_P};
+use super::constants::{U64_2P, U64_3P, U64_4P, U64_I1, U64_I2, U64_I3, U64_MU0, U64_P};
+use crate::subtract_modulus;
 
 #[macro_export]
 macro_rules! subarray {
@@ -61,10 +62,45 @@ pub fn addv(mut a: [u64; 5], b: [u64; 5]) -> [u64; 5] {
 
     a
 }
+
 #[inline(always)]
-pub fn reduce_ct(a: [u64; 4], u64_2p: [u64; 4]) -> [u64; 4] {
-    let b = [[0_u64; 4], u64_2p];
-    let msb = (a[3] >> 63) & 1;
+pub fn greater_than(a: &[u64; 4], b: &[u64; 4]) -> bool {
+    if a[3] > b[3] {
+        return true;
+    } else if a[3] < b[3] {
+        return false;
+    }
+
+    if a[2] > b[2] {
+        return true;
+    } else if a[2] < b[2] {
+        return false;
+    }
+
+    if a[1] > b[1] {
+        return true;
+    } else if a[1] < b[1] {
+        return false;
+    }
+
+    if a[0] > b[0] {
+        return true;
+    } else if a[0] < b[0] {
+        return false;
+    }
+
+    false // all limbs equal
+}
+
+// You don't really need 4p for bn-254
+#[inline(always)]
+pub fn reduce_ct(a: [u64; 4]) -> [u64; 4] {
+    let b = [[0_u64; 4], U64_P, U64_2P, U64_3P, U64_4P];
+    //let msb = (a[3] >> 63) & 1;
+    let msb = (greater_than(&a, &U64_P) as u8)
+        + (greater_than(&a, &U64_2P) as u8)
+        + (greater_than(&a, &U64_3P) as u8)
+        + (greater_than(&a, &U64_4P) as u8);
     sub(a, b[msb as usize])
 }
 // I could unroll this as well.
@@ -86,7 +122,7 @@ pub fn carrying_mul_add(a: u64, b: u64, add: u64, carry: u64) -> (u64, u64) {
     (c as u64, (c >> 64) as u64)
 }
 
-#[inline]
+//#[inline]
 pub fn scalar_mul(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     let mut t = [0_u64; 8];
     let mut carry = 0;
@@ -140,6 +176,6 @@ pub fn scalar_mul(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     (mp[1], mp[2]) = carrying_mul_add(m, U64_P[1], mp[1], 0);
     (mp[2], mp[3]) = carrying_mul_add(m, U64_P[2], mp[2], 0);
     (mp[3], mp[4]) = carrying_mul_add(m, U64_P[3], mp[3], 0);
-
-    reduce_ct(subarray!(addv(s, mp), 1, 4), U64_2P)
+    reduce_ct(subarray!(addv(s, mp), 1, 4))
+    //subarray!(addv(s, mp), 1, 4)
 }
