@@ -1,6 +1,6 @@
 // unrolled acar cios with daisy-chained carries and 128b additions
-use crate::{constants::*, subtract_modulus};
-#[inline]
+use crate::constants::*;
+//#[inline]
 pub fn mul_cios_opt_unr_3(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     // ab mults
     let (c00hi, c00lo) = mult(a[0], b[0]);
@@ -143,7 +143,7 @@ pub fn mul_cios_opt_unr_3(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     let (r31, _) = r31.carrying_add(0u64, c);
     // return
     let mut r = [r20, r21, r30, r31];
-    subtract_modulus(&mut r);
+    //subtract_modulus(&mut r);
     r
 }
 

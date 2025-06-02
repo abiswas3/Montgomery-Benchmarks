@@ -2,6 +2,7 @@ use ark_ff::fields::{Fp256, MontBackend, MontConfig};
 use ark_ff::UniformRand;
 use ark_std::rand::{rngs::StdRng, SeedableRng};
 use criterion::{criterion_group, criterion_main, Criterion};
+use minimal_mult::ari_cios::one_jump_two_cios;
 use minimal_mult::optimised_cios::scalar_mul_unwrapped as gmult;
 use minimal_mult::y_cios_opt::mul_cios_opt_unr_3;
 use minimal_mult::y_mult_opt::mul_logjumps_unr_2 as yuvals_new_mult;
@@ -43,18 +44,44 @@ pub fn barebones_benchmarking(c: &mut Criterion) {
         rand::random::<u64>(),
         rand::random::<u64>(),
     ];
-    c.bench_function("World Coin version", |b| {
-        b.iter(|| tmult(black_box(x), black_box(y)))
+    const NUM_MULTS: u32 = 100;
+
+    c.bench_function("Arkworks CIOS (10 chained c-mul, looped)", |b| {
+        b.iter(|| {
+            let x = black_box(x);
+            let y = black_box(y);
+
+            let mut acc = x;
+            for _ in 0..NUM_MULTS {
+                acc = gmult(acc, y);
+            }
+            black_box(acc)
+        });
     });
-    c.bench_function("Arkworks CIOS", |b| {
-        b.iter(|| gmult(black_box(x), black_box(y)))
+    c.bench_function("Ari (10 chained a-mul, looped)", |b| {
+        b.iter(|| {
+            let x = black_box(x);
+            let y = black_box(y);
+
+            let mut acc = x;
+            for _ in 0..NUM_MULTS {
+                acc = one_jump_two_cios(acc, y);
+            }
+            black_box(acc)
+        });
     });
 
-    c.bench_function("Yuvals CIOS", |b| {
-        b.iter(|| mul_cios_opt_unr_3(black_box(x), black_box(y)))
-    });
-    c.bench_function("Yuvals implementation", |b| {
-        b.iter(|| yuvals_new_mult(black_box(x), black_box(y)))
+    c.bench_function("h-mul (10 chained h-mul, looped)", |b| {
+        b.iter(|| {
+            let x = black_box(x);
+            let y = black_box(y);
+
+            let mut acc = x;
+            for _ in 0..NUM_MULTS {
+                acc = yuvals_new_mult(acc, y);
+            }
+            black_box(acc)
+        });
     });
 }
 
@@ -82,9 +109,9 @@ pub fn bench_inside_of_arkworks(c: &mut Criterion) {
     });
 }
 
-criterion_group!(group_one, barebones_benchmarking);
-criterion_group!(group_two, bench_inside_of_arkworks);
-criterion_main!(group_one, group_two);
+//criterion_group!(group_one, barebones_benchmarking);
+//criterion_group!(group_two, bench_inside_of_arkworks);
+//criterion_main!(group_one, group_two);
 
-//criterion_group!(benches, bench_inside_of_arkworks);
-//criterion_main!(benches);
+criterion_group!(benches, barebones_benchmarking);
+criterion_main!(benches);

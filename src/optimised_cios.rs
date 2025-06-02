@@ -1,6 +1,5 @@
-use crate::constants::{U64_2P, U64_MU0, U64_P};
-use crate::geq_bigint;
-use crate::subtract_modulus;
+use crate::constants::{U64_MU0, U64_P};
+use crate::fa::reduce_once_if_needed;
 #[inline(always)]
 #[doc(hidden)]
 pub const fn widening_mul(a: u64, b: u64) -> u128 {
@@ -137,6 +136,7 @@ pub fn scalar_mul_unwrapped(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
 
         r[3] = carry1 + carry2;
     }
-    subtract_modulus(&mut r);
+    //subtract_modulus(&mut r);
+    reduce_once_if_needed(&mut r);
     r
 }

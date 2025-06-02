@@ -24,10 +24,10 @@ fn random_fp<F: UniformRand>(seed: u64) -> F {
     F::rand(&mut rng)
 }
 
-fn benchmark_chained_mul_instance() -> (u128, u128) {
+fn benchmark_chained_mul_instance(seed: u64) -> (u128, u128) {
     const M: usize = 1000;
 
-    let mut acc_old = random_fp::<Fq>(12);
+    let mut acc_old = random_fp::<Fq>(seed);
     let now = Instant::now();
     for _ in 0..M {
         acc_old = acc_old.square();
@@ -35,7 +35,7 @@ fn benchmark_chained_mul_instance() -> (u128, u128) {
     black_box(acc_old);
     let duration_old = now.elapsed().as_nanos();
 
-    let mut acc_new = random_fp::<FFq>(12);
+    let mut acc_new = random_fp::<FFq>(seed);
     let now = Instant::now();
     for _ in 0..M {
         acc_new = acc_new.square();
@@ -53,8 +53,8 @@ fn benchmark_inside_of_arkworks() -> Result<()> {
     writeln!(file, "G-mult,Y-mult")?;
 
     let num_trials = 10000;
-    for _ in 0..num_trials {
-        let (old_time, new_time) = benchmark_chained_mul_instance();
+    for seed in 0..num_trials {
+        let (old_time, new_time) = benchmark_chained_mul_instance(seed);
         // Write the times to the CSV file for each function
         writeln!(file, "{old_time},{new_time}",)?;
     }

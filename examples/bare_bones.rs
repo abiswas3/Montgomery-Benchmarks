@@ -4,13 +4,11 @@
 // Script for testing things outside of arkworks.
 use core::num;
 
+use minimal_mult::ari_cios::one_jump_two_cios as a_mul;
 use minimal_mult::constants::U64_P;
-use minimal_mult::optimised_cios::scalar_mul_unwrapped as gcios_mul;
-use minimal_mult::y_cios_opt::mul_cios_opt_unr_3;
-use minimal_mult::y_mult_opt::mul_logjumps_unr_2;
-use minimal_mult::yuval_mult::scalar_mul as tony_mul;
-
-use minimal_mult::{arrays_eq, geq_bigint, print_u64_4, subtract_modulus};
+use minimal_mult::optimised_cios::scalar_mul_unwrapped as c_mul;
+use minimal_mult::y_mult_opt::mul_logjumps_unr_2 as h_mul;
+use minimal_mult::{arrays_eq, print_u64_4};
 
 // Random number generator that is always smaller than
 // modulus -- doing it via the arkworks library
@@ -24,7 +22,7 @@ use ark_std::rand::{rngs::StdRng, SeedableRng};
 #[generator = "5"]
 #[small_subgroup_base = "3"]
 #[small_subgroup_power = "2"]
-#[yd_opt = "true"]
+#[yd_opt = "false"]
 pub struct FqConfig;
 pub type Fq = Fp256<MontBackend<FqConfig, 4>>;
 fn random_fq(seed: u64) -> Fq {
@@ -33,13 +31,11 @@ fn random_fq(seed: u64) -> Fq {
 }
 
 fn simple_chaining() {
-    for trial_num in 0..1000000 {
+    for trial_num in 0..10000 {
         const NUM_MULTS: usize = 4;
-        let mut ymul: [u64; 4] = random_fq(trial_num).0 .0;
+        let mut hmul: [u64; 4] = random_fq(trial_num).0 .0;
         let mut gmul: [u64; 4] = random_fq(trial_num).0 .0;
-        let mut ycios_mul: [u64; 4] = random_fq(trial_num).0 .0;
-        let mut t_mul = random_fq(trial_num).0 .0;
-
+        let mut amul = random_fq(trial_num).0 .0;
         let mut arkworks_truth = random_fq(trial_num);
         // Chained multiplication
         // The issue is when the code is going above the
@@ -48,34 +44,19 @@ fn simple_chaining() {
             let b = random_fq(2 * trial_num * (j as u64)).0 .0;
             let b_fq = random_fq(2 * trial_num * (j as u64));
 
-            ymul = mul_logjumps_unr_2(ymul, b); // Yuvals skyscraper implementation
-            gmul = gcios_mul(gmul, b); // Arkworks-cios
-            t_mul = tony_mul(t_mul, b); // Tony's multiplication algorithm
-            ycios_mul = mul_cios_opt_unr_3(ycios_mul, b); // Yuval's CIOS implementation
+            hmul = h_mul(hmul, b); // Yuvals skyscraper implementation
+            gmul = c_mul(gmul, b); // Arkworks-cios
+            amul = a_mul(amul, b); // Tony's multiplication algorithm
             arkworks_truth *= b_fq;
         }
-        if !arrays_eq!(t_mul, arkworks_truth.0 .0) {
-            let mut count = 0;
-            while geq_bigint(t_mul, U64_P) {
-                count += 1;
-                subtract_modulus(&mut t_mul);
-            }
-            if count <= 3 {
-                continue;
-            }
+        if !arrays_eq!(amul, arkworks_truth.0 .0) {
             println!("-------------------{trial_num}-------------------");
-            print!("Yuval CIOS ");
-            print_u64_4!(ycios_mul);
-            print!("ARKWORKS CIOS ");
-            print_u64_4!(gmul);
+            print!("amul ");
+            print_u64_4!(amul);
             print!("Yuval OPT ");
-            print_u64_4!(ymul);
-            print!("TONY OPT ");
-            print_u64_4!(t_mul);
+            print_u64_4!(hmul);
             print!("Library code ");
-            print_u64_4!(t_mul);
-            println!("Took {} subtractions", count);
-            print_u64_4!(t_mul);
+            print_u64_4!(arkworks_truth.0 .0);
         }
     }
 }
@@ -93,27 +74,14 @@ fn simple_product() {
         0xffffffce00000031,
         0x30644e72e131a028,
     ];
-    let ymul = mul_logjumps_unr_2(a, b); // Yuvals skyscraper implementation
-    let gmul = gcios_mul(a, b); // Arkworks-cios
-    let mut t_mul = tony_mul(a, b);
+    let hmul = h_mul(a, b); // Yuvals skyscraper implementation
+    let cmul = c_mul(a, b); // Arkworks-cios
 
-    if !arrays_eq!(t_mul, gmul) {
-        print_u64_4!(ymul);
-        print_u64_4!(gmul);
-        print_u64_4!(t_mul);
-        let mut count = 0;
-        while geq_bigint(t_mul, U64_P) {
-            count += 1;
-            subtract_modulus(&mut t_mul);
-        }
+    if !arrays_eq!(hmul, cmul) {
         print!("ARKWORKS CIOS ");
-        print_u64_4!(gmul);
+        print_u64_4!(cmul);
         print!("Yuval OPT ");
-        print_u64_4!(ymul);
-        print!("TONY OPT ");
-        print_u64_4!(t_mul);
-        println!("Took {} subtractions", count);
-        print_u64_4!(t_mul);
+        print_u64_4!(hmul);
     }
 }
 

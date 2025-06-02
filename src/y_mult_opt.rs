@@ -1,11 +1,11 @@
 // unrolled logjumps using i1/i2 with daisy-chained carries and 128b additions
 // note: this version is limited to inputs < p
 
-use crate::subtract_modulus;
+use crate::fa::{mult, reduce_twice_if_needed, wadd};
 
-use super::constants::{U64_2P, U64_I1, U64_I2, U64_I3, U64_MU0, U64_P};
+use super::constants::{U64_I1, U64_I2, U64_MU0, U64_P};
 
-#[inline]
+//#[inline]
 pub fn mul_logjumps_unr_2(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     let (c00hi, c00lo) = mult(a[0], b[0]);
     let (c01hi, c01lo) = mult(a[0], b[1]);
@@ -43,10 +43,10 @@ pub fn mul_logjumps_unr_2(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     (r2, _) = wadd(0u64, c21hi, r2, c);
 
     (r1, c) = wadd(c02hi, c02lo, r1, false);
-    (r2, c) = wadd(c13hi, c13lo, r2, c); // ignore c - limited to input < p
+    (r2, _) = wadd(c13hi, c13lo, r2, c); // ignore c - limited to input < p
 
     (r1, c) = wadd(c20hi, c20lo, r1, false);
-    (r2, c) = wadd(c31hi, c31lo, r2, c); // ignore c - limited to input < p
+    (r2, _) = wadd(c31hi, c31lo, r2, c); // ignore c - limited to input < p
 
     (r1, c) = wadd(c03lo, 0u64, r1, false);
     (r2, c) = wadd(c23lo, c03hi, r2, c);
@@ -112,20 +112,8 @@ pub fn mul_logjumps_unr_2(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
 
     // return
     let mut r = [r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64];
-    subtract_modulus(&mut r);
-    subtract_modulus(&mut r);
+
+    reduce_twice_if_needed(&mut r);
+    //reduce_once_if_needed(&mut r, &U64_P);
     r
-}
-
-#[inline]
-const fn mult(lhs: u64, rhs: u64) -> (u64, u64) {
-    let res = (lhs as u128).wrapping_mul(rhs as u128);
-    ((res >> 64) as u64, res as u64)
-}
-
-#[inline]
-const fn wadd(lhs: u64, rhs: u64, acc: u128, c: bool) -> (u128, bool) {
-    let (reslo, c) = (acc as u64).carrying_add(rhs, c);
-    let (reshi, c) = ((acc >> 64) as u64).carrying_add(lhs, c);
-    ((reshi as u128) << 64 | reslo as u128, c)
 }
