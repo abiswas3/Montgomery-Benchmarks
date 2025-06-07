@@ -1,5 +1,6 @@
 use crate::fa;
-
+// Finite field scalar multiplication for the prime associated
+// with the bn-254 scalar field (hard coded into the algorithm)
 //#[inline]
 pub fn one_jump_two_cios(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     let (c00hi, c00lo) = fa::mult(a[0], b[0]);
@@ -88,7 +89,6 @@ pub fn one_jump_two_cios(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
         0x30644e72e131a029,
     ];
     const U64_MU0: u64 = 0xc2e1f593efffffff;
-
     let m = U64_MU0.wrapping_mul(r1 as u64);
     let (m0hi, m0lo) = fa::mult(m, U64_P[0]);
     let (m1hi, m1lo) = fa::mult(m, U64_P[1]);
@@ -124,6 +124,5 @@ pub fn one_jump_two_cios(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     // return
     let mut r = [r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64];
     fa::reduce_once_if_needed(&mut r);
-    //reduce_once_if_needed(&mut r, &U64_P);
     r
 }

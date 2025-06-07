@@ -1,13 +1,11 @@
 #![feature(bigint_helper_methods)]
-use std::usize;
-
-use minimal_mult::constants::U64_P;
-use minimal_mult::{arrays_eq, geq_bigint, print_u64_4};
-
 use ark_ff::fields::{Fp256, MontBackend, MontConfig};
 use ark_ff::UniformRand;
 use ark_ff::{Field, PrimeField};
 use ark_std::rand::{rngs::StdRng, SeedableRng};
+use minimal_mult::arrays_eq;
+use minimal_mult::fa::ge_p;
+use std::usize;
 
 #[derive(MontConfig)]
 #[modulus = "21888242871839275222246405745257275088548364400416034343698204186575808495617"]
@@ -72,14 +70,10 @@ fn test_correctness_multiplication() {
                 println!("b[{}] {}", i, b_old.0 .0[i]);
                 println!("c_old[{}]: 0x{:x}", i, limb_old);
                 println!("c[{}]:     0x{:x}", i, limb_new);
-                println!(
-                    "Is c > p {}: {}",
-                    geq_bigint((c.0).0, U64_P),
-                    c.is_geq_modulus()
-                );
+                println!("Is c > p {}: {}", ge_p((c.0).0), c.is_geq_modulus());
                 println!(
                     "Is c_old > p {}: {}",
-                    geq_bigint((c_old.0).0, U64_P),
+                    ge_p(&(c_old.0).0),
                     c_old.is_geq_modulus()
                 );
                 println!("Mismatch in limb {i} at trial {trial_num}");
@@ -92,11 +86,6 @@ fn test_correctness_multiplication() {
             println!("c_old Converted = {c_old}");
             panic!("Problem!");
         }
-        //assert_eq!(
-        //    c.into_bigint(),
-        //    c_old.into_bigint(),
-        //    "mismatch found at {trial_num}"
-        //);
     }
 }
 /// Tests that the optimized squaring algorithm produces the same result

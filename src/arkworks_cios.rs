@@ -1,5 +1,6 @@
 use crate::constants::{U64_MU0, U64_P};
 use crate::fa::reduce_once_if_needed;
+
 #[inline(always)]
 #[doc(hidden)]
 pub const fn widening_mul(a: u64, b: u64) -> u128 {
@@ -35,26 +36,7 @@ pub fn mac_discard(a: u64, b: u64, c: u64, carry: &mut u64) {
     *carry = (tmp >> 64) as u64;
 }
 
-//pub fn scalar_mul(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
-//    let mut r = [0u64; 4];
-//    for (i, &_element) in a.iter().enumerate() {
-//        let mut carry1 = 0u64;
-//        r[0] = mac(r[0], a[0], b[i], &mut carry1);
-//        let k = r[0].wrapping_mul(U64_MU0);
-//        let mut carry2 = 0u64;
-//        mac_discard(r[0], k, U64_P[0], &mut carry2);
-//        for j in 1..4 {
-//            let idx = j - 1;
-//            r[j] = mac_with_carry(r[j], a[j], b[i], &mut carry1);
-//            r[idx] = mac_with_carry(r[j], k, U64_P[j], &mut carry2)
-//        }
-//        r[3] = carry1 + carry2;
-//    }
-//    subtract_modulus(r, U64_2P);
-//    r
-//}
-
-pub fn scalar_mul_unwrapped(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
+pub fn ark_cios(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     let mut r = [0u64; 4];
 
     // i = 0
@@ -136,7 +118,6 @@ pub fn scalar_mul_unwrapped(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
 
         r[3] = carry1 + carry2;
     }
-    //subtract_modulus(&mut r);
     reduce_once_if_needed(&mut r);
     r
 }

@@ -1,5 +1,4 @@
-use super::constants::{U64_2P, U64_3P, U64_4P, U64_I1, U64_I2, U64_I3, U64_MU0, U64_P};
-
+use super::constants::{U64_2P, U64_I1, U64_I2, U64_I3, U64_MU0, U64_P};
 #[macro_export]
 macro_rules! subarray {
 
@@ -8,7 +7,6 @@ macro_rules! subarray {
         use seq_macro::seq;
         let t = $t;
         let mut s = [0;$l];
-
         // The compiler does not detect out-of-bounds when using `for` therefore `seq!` is used here
         seq!(i in 0..$l {
             s[i] = t[$b+i];
@@ -17,18 +15,6 @@ macro_rules! subarray {
     }
     };
 }
-
-//#[inline(always)]
-//fn addv<const N: usize>(mut a: [u64; N], b: [u64; N]) -> [u64; N] {
-//    let mut carry = 0u64;
-//    for i in 0..N {
-//        let (sum1, overflow1) = a[i].overflowing_add(b[i]);
-//        let (sum2, overflow2) = sum1.overflowing_add(carry);
-//        a[i] = sum2;
-//        carry = (overflow1 as u64) + (overflow2 as u64);
-//    }
-//    a
-//}
 
 #[inline(always)]
 pub fn addv(mut a: [u64; 5], b: [u64; 5]) -> [u64; 5] {
@@ -62,45 +48,11 @@ pub fn addv(mut a: [u64; 5], b: [u64; 5]) -> [u64; 5] {
     a
 }
 
-#[inline(always)]
-pub fn greater_than(a: &[u64; 4], b: &[u64; 4]) -> bool {
-    if a[3] > b[3] {
-        return true;
-    } else if a[3] < b[3] {
-        return false;
-    }
-
-    if a[2] > b[2] {
-        return true;
-    } else if a[2] < b[2] {
-        return false;
-    }
-
-    if a[1] > b[1] {
-        return true;
-    } else if a[1] < b[1] {
-        return false;
-    }
-
-    if a[0] > b[0] {
-        return true;
-    } else if a[0] < b[0] {
-        return false;
-    }
-
-    false // all limbs equal
-}
-
 // You don't really need 4p for bn-254
 #[inline(always)]
 pub fn reduce_ct(a: [u64; 4]) -> [u64; 4] {
-    //let b = [[0_u64; 4], U64_P, U64_2P, U64_3P, U64_4P];
     let b = [[0_u64; 4], U64_2P];
     let msb = (a[3] >> 63) & 1;
-    //let msb = (greater_than(&a, &U64_P) as u8)
-    //    + (greater_than(&a, &U64_2P) as u8)
-    //    + (greater_than(&a, &U64_3P) as u8)
-    //    + (greater_than(&a, &U64_4P) as u8);
     sub(a, b[msb as usize])
 }
 // I could unroll this as well.
@@ -123,7 +75,7 @@ pub fn carrying_mul_add(a: u64, b: u64, add: u64, carry: u64) -> (u64, u64) {
 }
 
 //#[inline]
-pub fn scalar_mul(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
+pub fn single_step(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     let mut t = [0_u64; 8];
     let mut carry = 0;
     (t[0], carry) = carrying_mul_add(a[0], b[0], t[0], carry);

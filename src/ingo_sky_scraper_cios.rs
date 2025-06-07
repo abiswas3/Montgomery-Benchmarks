@@ -1,3 +1,5 @@
+use ark_ff::biginteger::arithmetic::reduce_once_if_needed;
+
 // unrolled acar cios with daisy-chained carries and 128b additions
 use crate::constants::*;
 //#[inline]
@@ -144,6 +146,7 @@ pub fn mul_cios_opt_unr_3(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     // return
     let mut r = [r20, r21, r30, r31];
     //subtract_modulus(&mut r);
+    reduce_once_if_needed(&mut r);
     r
 }
 
@@ -151,11 +154,4 @@ pub fn mul_cios_opt_unr_3(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
 const fn mult(lhs: u64, rhs: u64) -> (u64, u64) {
     let res = (lhs as u128).wrapping_mul(rhs as u128);
     ((res >> 64) as u64, res as u64)
-}
-
-#[inline]
-const fn wadd(lhs: u64, rhs: u64, acc: u128, c: bool) -> (u128, bool) {
-    let (reslo, c) = (acc as u64).carrying_add(rhs, c);
-    let (reshi, c) = ((acc >> 64) as u64).carrying_add(lhs, c);
-    ((reshi as u128) << 64 | reslo as u128, c)
 }

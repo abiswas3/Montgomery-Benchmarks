@@ -112,8 +112,6 @@ pub fn mul_logjumps_unr_2(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
 
     // return
     let mut r = [r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64];
-
     reduce_twice_if_needed(&mut r);
-    //reduce_once_if_needed(&mut r, &U64_P);
     r
 }
