@@ -17,3 +17,17 @@ target/
 #.idea/
 ||||||| empty tree
 Cargo.lock
+arkworks_multiplication.csv
+arkworks_multiplication_small.csv
+cmul.dump.s
+arkworks_squaring.csv
+fq_config.rs
+gmult.csv
+hmul.dump.s
+ymult.csv
+ymul.dump.s
+ymul
+without_subtracts
+with_subtracts
+tmul.dump.s
+tmp.rs
