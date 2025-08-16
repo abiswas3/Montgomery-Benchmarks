@@ -122,7 +122,8 @@ pub fn one_jump_two_cios(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     (r2, c) = fa::wadd(mm2lo, mm1lo, r2, false);
     (r3, _) = fa::wadd(0u64, 0u64, r3, c);
     // return
-    let mut r = [r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64];
-    fa::reduce_once_if_needed(&mut r);
-    r
+    [r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64]
+    //let mut r = [r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64];
+    //fa::reduce_once_if_needed(&mut r);
+    //r
 }

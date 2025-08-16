@@ -110,7 +110,7 @@ pub fn mul_logjumps_unr_2(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     (r2, c) = wadd(m1hi, m1lo, r2, false);
     (r3, _) = wadd(0u64, 0u64, r3, c);
 
-    // return
+    //[r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64]
     let mut r = [r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64];
     reduce_twice_if_needed(&mut r);
     r

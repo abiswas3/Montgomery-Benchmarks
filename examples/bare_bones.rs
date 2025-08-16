@@ -4,10 +4,10 @@
 // Script for testing things outside of arkworks.
 use core::num;
 
-use minimal_mult::ari_cios::one_jump_two_cios as a_mul;
+use minimal_mult::a_mult::one_jump_two_cios as a_mul;
+use minimal_mult::arkworks_cios::ark_cios as c_mul;
 use minimal_mult::constants::U64_P;
-use minimal_mult::optimised_cios::scalar_mul_unwrapped as c_mul;
-use minimal_mult::y_mult_opt::mul_logjumps_unr_2 as h_mul;
+use minimal_mult::logjumps::mul_logjumps_unr_2 as h_mul;
 use minimal_mult::{arrays_eq, print_u64_4};
 
 // Random number generator that is always smaller than

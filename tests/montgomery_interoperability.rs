@@ -68,9 +68,9 @@ fn test_correctness_multiplication() {
                 println!("Mismatched limb index = {i}");
                 println!("a[{}] {}", i, tmp.0 .0[i]);
                 println!("b[{}] {}", i, b_old.0 .0[i]);
-                println!("c_old[{}]: 0x{:x}", i, limb_old);
-                println!("c[{}]:     0x{:x}", i, limb_new);
-                println!("Is c > p {}: {}", ge_p((c.0).0), c.is_geq_modulus());
+                println!("c_old[{i}]: 0x{limb_old}");
+                println!("c[{i}]:     0x{limb_new}");
+                println!("Is c > p {}: {}", ge_p(&(c.0).0), c.is_geq_modulus());
                 println!(
                     "Is c_old > p {}: {}",
                     ge_p(&(c_old.0).0),
