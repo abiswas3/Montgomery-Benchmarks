@@ -11,6 +11,39 @@
 | Rust | rustc 1.95.0-nightly (d940e5684 2026-01-19) |
 | perf | 6.19-2 |
 
+## Reproducing
+
+```bash
+# 1. Enable hardware counters (resets on reboot)
+echo 1 | sudo tee /proc/sys/kernel/perf_event_paranoid
+
+# 2. Build bench binaries
+RUSTFLAGS="-C target-cpu=native" cargo bench --no-run
+
+# 3. Find the binary (hash changes on rebuild)
+BIND_BIN=$(ls target/release/deps/bench_sumcheck_bind-* | grep -v '\.d' | head -1)
+
+# 4. Run all variants
+GROUPS=("bind_small_coeffs" "bind_random_coeffs")
+VARIANTS=("no_reduce/c_mul" "no_reduce/h_mul" "no_reduce/h_mul_jit" \
+          "correct_reduce/c_mul" "correct_reduce/h_mul" "correct_reduce/h_mul_jit")
+
+for group in "${GROUPS[@]}"; do
+  for variant in "${VARIANTS[@]}"; do
+    echo "========================================"
+    echo "  $group / $variant"
+    echo "========================================"
+    perf stat -e branches,branch-misses,instructions,cycles -r 5 \
+      "$BIND_BIN" --bench "${group}/${variant}" 2>&1
+    echo ""
+  done
+done
+```
+
+Requires nightly Rust (see `rust-toolchain.toml`) and Linux with `perf`
+installed. On non-hybrid CPUs the output will show plain `branches` /
+`branch-misses` instead of `cpu_core/…` / `cpu_atom/…`.
+
 ## Build
 
 ```bash
