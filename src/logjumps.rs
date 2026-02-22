@@ -1,12 +1,11 @@
 // unrolled logjumps using i1/i2 with daisy-chained carries and 128b additions
 // note: this version is limited to inputs < p
 
-use crate::fa::{mult, reduce_twice_if_needed, wadd};
+use crate::fa::{mult, reduce_once_if_needed, reduce_twice_if_needed, wadd};
 
 use super::constants::{U64_I1, U64_I2, U64_MU0, U64_P};
 
-//#[inline]
-pub fn mul_logjumps_unr_2(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
+fn mul_logjumps_unr_2_inner(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     let (c00hi, c00lo) = mult(a[0], b[0]);
     let (c01hi, c01lo) = mult(a[0], b[1]);
     let (c02hi, c02lo) = mult(a[0], b[2]);
@@ -110,8 +109,24 @@ pub fn mul_logjumps_unr_2(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     (r2, c) = wadd(m1hi, m1lo, r2, false);
     (r3, _) = wadd(0u64, 0u64, r3, c);
 
-    //[r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64]
-    let mut r = [r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64];
+    [r2 as u64, (r2 >> 64) as u64, r3 as u64, (r3 >> 64) as u64]
+}
+
+/// Log-jumps (h-mul), N=4 limbs. 0 conditional subtractions. Raw output, may exceed p.
+pub fn mul_logjumps_no_reduce(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
+    mul_logjumps_unr_2_inner(a, b)
+}
+
+/// Log-jumps (h-mul), N=4 limbs. 1 conditional subtraction. Output may still exceed p (~68% overflow rate).
+pub fn mul_logjumps_one_reduce(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
+    let mut r = mul_logjumps_unr_2_inner(a, b);
+    reduce_once_if_needed(&mut r);
+    r
+}
+
+/// Log-jumps (h-mul), N=4 limbs. Up to 2 conditional subtractions (~68% overflow rate). Output ∈ [0, p).
+pub fn mul_logjumps_unr_2(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
+    let mut r = mul_logjumps_unr_2_inner(a, b);
     reduce_twice_if_needed(&mut r);
     r
 }

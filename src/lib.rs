@@ -1,11 +1,10 @@
 #![feature(bigint_helper_methods)]
 pub mod a_mult;
-pub mod arkworks_cios;
+pub mod cios;
 pub mod constants;
 pub mod fa;
-pub mod ingo_sky_scraper_cios;
 pub mod logjumps;
-pub mod world_coin_single;
+pub mod logjumps_jit;
 
 #[macro_export]
 macro_rules! print_u64_4 {

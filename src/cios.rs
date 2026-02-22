@@ -2,41 +2,31 @@ use crate::constants::{U64_MU0, U64_P};
 use crate::fa::reduce_once_if_needed;
 
 #[inline(always)]
-#[doc(hidden)]
-pub const fn widening_mul(a: u64, b: u64) -> u128 {
+fn widening_mul(a: u64, b: u64) -> u128 {
     a as u128 * b as u128
 }
 
-/// Calculate a + (b * c) + carry, returning the least significant digit
-/// and setting carry to the most significant digit.
 #[inline(always)]
-#[doc(hidden)]
-pub fn mac_with_carry(a: u64, b: u64, c: u64, carry: &mut u64) -> u64 {
+fn mac_with_carry(a: u64, b: u64, c: u64, carry: &mut u64) -> u64 {
     let tmp = (a as u128) + widening_mul(b, c) + (*carry as u128);
     *carry = (tmp >> 64) as u64;
     tmp as u64
 }
 
-/// Calculate a + b * c, returning the lower 64 bits of the result and setting
-/// `carry` to the upper 64 bits.
 #[inline(always)]
-#[doc(hidden)]
-pub fn mac(a: u64, b: u64, c: u64, carry: &mut u64) -> u64 {
+fn mac(a: u64, b: u64, c: u64, carry: &mut u64) -> u64 {
     let tmp = (a as u128) + widening_mul(b, c);
     *carry = (tmp >> 64) as u64;
     tmp as u64
 }
 
-/// Calculate a + b * c, discarding the lower 64 bits of the result and setting
-/// `carry` to the upper 64 bits.
 #[inline(always)]
-#[doc(hidden)]
-pub fn mac_discard(a: u64, b: u64, c: u64, carry: &mut u64) {
+fn mac_discard(a: u64, b: u64, c: u64, carry: &mut u64) {
     let tmp = (a as u128) + widening_mul(b, c);
     *carry = (tmp >> 64) as u64;
 }
 
-pub fn ark_cios(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
+fn cios_inner(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
     let mut r = [0u64; 4];
 
     // i = 0
@@ -118,6 +108,17 @@ pub fn ark_cios(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
 
         r[3] = carry1 + carry2;
     }
+    r
+}
+
+/// CIOS (c-mul), N=4 limbs. 1 conditional subtraction (~5% overflow rate). Output ∈ [0, p).
+pub fn cios(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
+    let mut r = cios_inner(a, b);
     reduce_once_if_needed(&mut r);
     r
+}
+
+/// CIOS (c-mul), N=4 limbs. 0 conditional subtractions. Raw output, may exceed p.
+pub fn cios_no_reduce(a: [u64; 4], b: [u64; 4]) -> [u64; 4] {
+    cios_inner(a, b)
 }
